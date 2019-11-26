@@ -121,11 +121,13 @@ public class DataStore {
     }
 
     /**
+     * Insert Data in the data source file
+     * Refer {@link DataStoreValidation} for key value constraints
      *
      * @param key     {@link String}
      * @param payload {@link JSONObject}
-     * @throws InvalidRequestException
-     * @throws IOException
+     * @throws InvalidRequestException throws if the request is invalid
+     * @throws IOException             throws if the file source cant be accessed
      */
     public void put(@NonNull String key, @NonNull JSONObject payload) throws InvalidRequestException, IOException {
         this.dataStoreValidation.validatePutRequest(key, payload, this.keyStorePersistence);
@@ -133,6 +135,14 @@ public class DataStore {
         this.keyStorePersistence.putData(key.trim(), payload);
     }
 
+    /**
+     * Read data from data source using key.
+     *
+     * @param key {@link String} the key against which the data is beign stored
+     * @return {@link JSONObject}
+     * @throws JSONException throws if the data cant be serialized to json object
+     * @throws IOException   throws if the data source file cant be accessed
+     */
     public JSONObject getData(String key) throws JSONException, IOException {
 
         JSONObject jsonObject = this.keyStorePersistence.getData(key.trim());

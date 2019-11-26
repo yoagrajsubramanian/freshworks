@@ -3,7 +3,6 @@ package com.yogaraj.datastore.storage;
 import com.yogaraj.datastore.constant.DataStoreConstant;
 import com.yogaraj.datastore.constant.ErrorConstant;
 import com.yogaraj.datastore.exception.InvalidRequestException;
-import com.yogaraj.datastore.exception.KeyExpiredException;
 import com.yogaraj.datastore.service.DataStoreOffsetService;
 import com.yogaraj.datastore.service.LoggerService;
 import com.yogaraj.datastore.utils.FileUtils;
@@ -20,6 +19,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+/**
+ * {@link KeyStorePersistence} handles all persistence level operations.
+ *
+ * @author yogaraj
+ */
 @Component
 public class KeyStorePersistence {
 
@@ -28,7 +32,7 @@ public class KeyStorePersistence {
 
     @Autowired
     DataStoreOffsetService dataStoreOffsetService;
-
+    
     public void putData(String key, JSONObject jsonObject) throws IOException {
         File file = new File(FileUtils.getDataSourcePath());
         if (!file.exists()) {
@@ -41,7 +45,7 @@ public class KeyStorePersistence {
 
         try {
             fileChannel.tryLock();
-        }catch (IOException e){
+        } catch (IOException e) {
             throw new IOException("Resource Already Inuse Exception");
         }
 
@@ -61,7 +65,7 @@ public class KeyStorePersistence {
 
         String dataPositionOffset = this.dataStoreOffsetService.getKeyOffset(key);
 
-        if (StringUtils.isEmpty(dataPositionOffset)){
+        if (StringUtils.isEmpty(dataPositionOffset)) {
             return null;
         }
 
@@ -99,7 +103,7 @@ public class KeyStorePersistence {
 
         String dataPositionOffset = this.dataStoreOffsetService.getKeyOffset(key);
 
-        if (StringUtils.isEmpty(dataPositionOffset)){
+        if (StringUtils.isEmpty(dataPositionOffset)) {
             throw new InvalidRequestException(ErrorConstant.ERROR_INVALID_KEY);
         }
 
@@ -119,27 +123,27 @@ public class KeyStorePersistence {
 
         try {
             fileChannel.tryLock();
-        }catch (IOException e){
+        } catch (IOException e) {
             throw new IOException("Resource Already Inuse Exception");
         }
 
-        byte[] emptyByte = new byte[(int)offset];
+        byte[] emptyByte = new byte[(int) offset];
 
         for (int i = 0; i < (int) offset; i++) {
             //here 127 is the ascii value for delete
-            emptyByte[i]=127;
+            emptyByte[i] = 127;
         }
 
         ByteBuffer byteBuffer = ByteBuffer.wrap(emptyByte);
 
-        fileChannel.write(byteBuffer,position - offset);
+        fileChannel.write(byteBuffer, position - offset);
 
         fileChannel.close();
 
         dataStoreOffsetService.deleteKeyOffset(key);
     }
 
-    public boolean checkIfKeyPresent(String key){
+    public boolean checkIfKeyPresent(String key) {
         String dataPositionOffset = this.dataStoreOffsetService.getKeyOffset(key);
         return StringUtils.isEmpty(dataPositionOffset);
     }
